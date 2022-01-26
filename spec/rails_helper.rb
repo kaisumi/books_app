@@ -61,4 +61,26 @@ RSpec.configure do |config|
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
+  config.after(:suite) do
+    FileUtils.rm_rf("#{Rails.root}/tmp/storage")
+  end
+
+  Dir["#{Rails.root}/app/uploaders/*.rb"].each { |file| require file }
+  if defined?(CarrierWave)
+    CarrierWave::Uploader::Base.descendants.each do |klass|
+      next if klass.anonymous?
+
+      klass.class_eval do
+        def store_dir
+          "#{Rails.root}/spec/support/uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
+        end
+      end
+    end
+  end
+
+  config.after(:all) do
+    if Rails.env.test?
+      FileUtils.rm_rf(Dir["#{Rails.root}/spec/support/uploads"])
+    end
+  end
 end
