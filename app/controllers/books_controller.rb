@@ -65,8 +65,6 @@ class BooksController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def book_params
-      p '**************'
-      p params # paramsの中身を表示
       params.require(:book).permit(:title, :memo, :author, :picture)
     end
 end
